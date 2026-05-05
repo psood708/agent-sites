@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import ThemeToggle from "@/components/ThemeToggle";
+import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import "./globals.css";
 
@@ -33,19 +33,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        {/* Nav */}
-        <nav
-          className="flex items-center justify-between px-6 py-3"
-          style={{ borderBottom: "1px solid var(--border)" }}
-        >
-          <span
-            className="text-xs uppercase tracking-widest font-medium"
-            style={{ color: "var(--blue)" }}
-          >
-            agentreadiness
-          </span>
-          <ThemeToggle />
-        </nav>
+        <NavBar />
 
         <main className="flex-1">{children}</main>
         <Footer />

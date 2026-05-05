@@ -25,31 +25,27 @@ export default function Scanner({ initialUrl }: { initialUrl?: string }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [scanDuration, setScanDuration] = useState<number | null>(null);
 
-  async function handleScan(e: React.FormEvent) {
-    e.preventDefault();
-    if (!url.trim()) return;
-
-    const normalized = url.startsWith("http") ? url : `https://${url}`;
+  async function performScan(target: string) {
     setLoading(true);
     setError(null);
     setResult(null);
-
+    const t0 = Date.now();
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
       const res = await fetch(`${apiUrl}/scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: normalized }),
+        body: JSON.stringify({ url: target }),
       });
-
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.detail || `Scan failed (${res.status})`);
       }
-
       const data: ScanResult = await res.json();
       setResult(data);
+      setScanDuration((Date.now() - t0) / 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error");
     } finally {
@@ -57,87 +53,163 @@ export default function Scanner({ initialUrl }: { initialUrl?: string }) {
     }
   }
 
-  const domain = result
-    ? new URL(result.origin).hostname
-    : "";
+  async function handleScan(e: React.FormEvent) {
+    e.preventDefault();
+    if (!url.trim()) return;
+    await performScan(url.startsWith("http") ? url : `https://${url}`);
+  }
+
+  function handleRescan() {
+    if (result) performScan(result.url);
+  }
+
+  const domain = result ? new URL(result.origin).hostname : "";
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-24">
-      {/* Header */}
-      <div className="pt-20 pb-12 text-center">
-        <div
-          className="inline-block text-xs uppercase tracking-widest mb-6 px-3 py-1 rounded-sm"
-          style={{
-            color: "var(--blue)",
-            border: "1px solid var(--blue-border)",
-            background: "var(--blue-dim)",
-          }}
-        >
-          Agent Readiness Scanner
-        </div>
-        <h1
-          className="text-3xl sm:text-4xl font-bold tracking-tight mb-3"
-          style={{ color: "var(--text)" }}
-        >
-          Is your website ready
-          <br />
-          for AI agents?
-        </h1>
-        <p
-          className="text-sm max-w-sm mx-auto"
-          style={{ color: "var(--text-muted)" }}
-        >
-          Score any site in seconds. Get a free /llms.txt.
-        </p>
-      </div>
-
-      {/* Input */}
-      <form onSubmit={handleScan} className="mb-8">
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <span
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-sm select-none"
-              style={{ color: "var(--text-muted)" }}
-            >
-              https://
-            </span>
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="yoursite.com"
-              className="w-full pl-20 pr-4 py-3 text-sm rounded-sm outline-none transition-all"
+      {result ? (
+        /* ── Post-scan: V2 URL bar ── */
+        <div className="pt-8 pb-10">
+          <div className="flex gap-2 items-center">
+            <div
+              className="flex-1 flex items-center gap-3 px-4 py-3 text-sm"
               style={{
-                background: "var(--bg-card)",
                 border: "1px solid var(--border-bright)",
-                color: "var(--text)",
-                fontFamily: "inherit",
+                background: "var(--bg-card)",
               }}
-              onFocus={(e) =>
-                ((e.target as HTMLElement).style.borderColor =
-                  "var(--blue-border)")
-              }
-              onBlur={(e) =>
-                ((e.target as HTMLElement).style.borderColor =
-                  "var(--border-bright)")
-              }
-            />
+            >
+              <span style={{ color: "var(--text-muted)" }}>↳</span>
+              <span style={{ color: "var(--text-muted)" }}>https://</span>
+              <span style={{ color: "var(--text)" }}>{domain}</span>
+              {scanDuration !== null && (
+                <span
+                  className="ml-auto text-[11px]"
+                  style={{ color: "var(--green)" }}
+                >
+                  ● scanned {scanDuration.toFixed(1)}s ago
+                </span>
+              )}
+            </div>
+            <button
+              onClick={handleRescan}
+              disabled={loading}
+              className="px-4 py-3 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                border: "1px solid var(--border-bright)",
+                color: "var(--text-muted)",
+                background: "transparent",
+                fontFamily: "inherit",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.color = "var(--text)";
+                (e.currentTarget as HTMLElement).style.borderColor =
+                  "var(--blue-border)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.color =
+                  "var(--text-muted)";
+                (e.currentTarget as HTMLElement).style.borderColor =
+                  "var(--border-bright)";
+              }}
+            >
+              ↻ Rescan
+            </button>
+            <button
+              onClick={() => {
+                setResult(null);
+                setScanDuration(null);
+              }}
+              className="px-3 py-3 text-sm"
+              style={{
+                border: "1px solid var(--border-bright)",
+                color: "var(--text-muted)",
+                background: "transparent",
+                fontFamily: "inherit",
+                cursor: "pointer",
+              }}
+              title="Scan a different URL"
+            >
+              ✕
+            </button>
           </div>
-          <button
-            type="submit"
-            disabled={loading || !url.trim()}
-            className="px-6 py-3 text-sm font-medium rounded-sm transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        </div>
+      ) : (
+        /* ── Pre-scan: headline + form ── */
+        <div className="pt-20 pb-12">
+          <div
+            className="inline-block text-xs uppercase tracking-widest mb-6 px-3 py-1 rounded-sm"
             style={{
-              background: loading ? "var(--blue-dim)" : "var(--blue)",
-              color: "var(--bg)",
-              border: "1px solid var(--blue)",
-              fontFamily: "inherit",
+              color: "var(--blue)",
+              border: "1px solid var(--blue-border)",
+              background: "var(--blue-dim)",
             }}
           >
-            {loading ? "Scanning…" : "Scan →"}
-          </button>
+            Agent Readiness Scanner
+          </div>
+          <h1
+            className="text-3xl sm:text-4xl font-bold tracking-tight mb-3"
+            style={{ color: "var(--text)" }}
+          >
+            Is your website ready
+            <br />
+            for AI agents?
+          </h1>
+          <p
+            className="text-sm max-w-sm mb-8"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Score any site in seconds. Get a free /llms.txt.
+          </p>
+
+          <form onSubmit={handleScan}>
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <span
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-sm select-none"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  https://
+                </span>
+                <input
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="yoursite.com"
+                  className="w-full pl-20 pr-4 py-3 text-sm rounded-sm outline-none transition-all"
+                  style={{
+                    background: "var(--bg-card)",
+                    border: "1px solid var(--border-bright)",
+                    color: "var(--text)",
+                    fontFamily: "inherit",
+                  }}
+                  onFocus={(e) =>
+                    ((e.target as HTMLElement).style.borderColor =
+                      "var(--blue-border)")
+                  }
+                  onBlur={(e) =>
+                    ((e.target as HTMLElement).style.borderColor =
+                      "var(--border-bright)")
+                  }
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !url.trim()}
+                className="px-6 py-3 text-sm font-medium rounded-sm transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
+                  background: loading ? "var(--blue-dim)" : "var(--blue)",
+                  color: "var(--bg)",
+                  border: "1px solid var(--blue)",
+                  fontFamily: "inherit",
+                }}
+              >
+                {loading ? "Scanning…" : "Scan →"}
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      )}
 
       {/* Loading state */}
       {loading && (
@@ -180,8 +252,8 @@ export default function Scanner({ initialUrl }: { initialUrl?: string }) {
 
       {/* Results */}
       {result && (
-        <div className="space-y-4">
-          <ScoreGauge score={result.score} grade={result.grade} />
+        <div className="space-y-10">
+          <ScoreGauge score={result.score} grade={result.grade} domain={domain} />
           <ScoreTable checks={result.checks} />
           <RecommendationsPanel recommendations={result.recommendations} />
           <LlmsTxtPanel content={result.llms_txt_draft} domain={domain} />

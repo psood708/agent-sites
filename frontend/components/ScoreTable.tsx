@@ -14,116 +14,132 @@ const CHECK_ORDER = [
   "llms_txt",
   "json_ld",
   "clean_content",
-  "robots_txt",
-  "sitemap",
   "opengraph",
   "meta",
   "canonical",
+  "robots_txt",
+  "sitemap",
 ];
 
 export default function ScoreTable({ checks }: Props) {
-  const ordered = CHECK_ORDER.map((k) => ({ key: k, ...checks[k] })).filter(
-    Boolean
-  );
+  const ordered = CHECK_ORDER.filter((k) => checks[k]);
+  const passing = ordered.filter((k) => checks[k].pass);
+  const failing = ordered.filter((k) => !checks[k].pass);
+  const totalEarned = passing.reduce((s, k) => s + checks[k].weight, 0);
+  const totalMissed = failing.reduce((s, k) => s + checks[k].weight, 0);
 
   return (
-    <div
-      className="fade-up-1 rounded-sm overflow-hidden"
-      style={{ border: "1px solid var(--border)" }}
-    >
-      <div
-        className="px-4 py-2 text-xs uppercase tracking-widest"
-        style={{
-          color: "var(--text-muted)",
-          borderBottom: "1px solid var(--border)",
-          background: "var(--bg-card)",
-        }}
-      >
-        Diagnostic Report
-      </div>
-
-      <table className="w-full text-sm">
-        <thead>
-          <tr style={{ borderBottom: "1px solid var(--border)" }}>
-            <th
-              className="text-left px-4 py-2 text-xs uppercase tracking-widest font-normal"
-              style={{ color: "var(--text-muted)", width: "40%" }}
+    <div className="fade-up-1">
+      <div className="grid grid-cols-2 gap-12">
+        {/* Credited */}
+        <div>
+          <div
+            className="text-[11px] uppercase tracking-[0.25em] pb-2.5"
+            style={{
+              color: "var(--text-muted)",
+              borderBottom: "1px solid var(--border)",
+            }}
+          >
+            Credited — {passing.length} items
+          </div>
+          {passing.map((k) => (
+            <div
+              key={k}
+              className="flex justify-between py-2.5"
+              style={{ borderBottom: "1px dotted var(--border)" }}
             >
-              Check
-            </th>
-            <th
-              className="text-right px-4 py-2 text-xs uppercase tracking-widest font-normal"
-              style={{ color: "var(--text-muted)", width: "80px" }}
-            >
-              Points
-            </th>
-            <th
-              className="text-left px-4 py-2 text-xs uppercase tracking-widest font-normal"
+              <span className="text-sm" style={{ color: "var(--text)" }}>
+                ✓ &nbsp;{checks[k].label}
+              </span>
+              <span
+                className="text-sm tabular-nums"
+                style={{ color: "var(--green)" }}
+              >
+                +{checks[k].weight}.00
+              </span>
+            </div>
+          ))}
+          <div
+            className="flex justify-between py-3 mt-1"
+            style={{ borderTop: "1px solid var(--text)" }}
+          >
+            <span
+              className="text-[12px] uppercase tracking-[0.2em]"
               style={{ color: "var(--text-muted)" }}
             >
-              Detail
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {ordered.map(({ key, pass, detail, weight, label }, i) => (
-            <tr
-              key={key}
-              style={{
-                borderBottom:
-                  i < ordered.length - 1
-                    ? "1px solid var(--border)"
-                    : undefined,
-                background: pass ? "var(--green-dim)" : "transparent",
-                transition: "background 0.2s",
-              }}
+              Subtotal
+            </span>
+            <span
+              className="text-sm font-bold tabular-nums"
+              style={{ color: "var(--text)" }}
             >
-              <td className="px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="inline-block w-2 h-2 rounded-full shrink-0"
-                    style={{
-                      background: pass ? "var(--green)" : "var(--text-muted)",
-                      boxShadow: pass
-                        ? "0 0 6px var(--green)"
-                        : undefined,
-                    }}
-                  />
-                  <span style={{ color: "var(--text)" }}>{label}</span>
-                </div>
-              </td>
-              <td className="px-4 py-3 text-right">
-                <span
-                  className="font-bold tabular-nums"
-                  style={{
-                    color: pass ? "var(--green)" : "var(--text-muted)",
-                  }}
-                >
-                  {pass ? `+${weight}` : "0"}
-                </span>
-              </td>
-              <td
-                className="px-4 py-3 text-xs"
-                style={{ color: "var(--text-muted)" }}
+              +{totalEarned}.00
+            </span>
+          </div>
+        </div>
+
+        {/* Forfeited */}
+        <div>
+          <div
+            className="text-[11px] uppercase tracking-[0.25em] pb-2.5"
+            style={{
+              color: "var(--text-muted)",
+              borderBottom: "1px solid var(--border)",
+            }}
+          >
+            Forfeited — {failing.length} items
+          </div>
+          {failing.map((k) => (
+            <div
+              key={k}
+              className="flex justify-between py-2.5"
+              style={{ borderBottom: "1px dotted var(--border)" }}
+            >
+              <span className="text-sm" style={{ color: "var(--text-muted)" }}>
+                ✕ &nbsp;{checks[k].label}
+              </span>
+              <span
+                className="text-sm tabular-nums"
+                style={{ color: "var(--red)" }}
               >
-                <div className="flex items-center gap-2">
-                  <span
-                    className="text-xs px-1.5 py-0.5 rounded-sm font-medium uppercase tracking-wider shrink-0"
-                    style={{
-                      background: pass ? "var(--green-dim)" : "var(--red-dim)",
-                      color: pass ? "var(--green)" : "var(--red)",
-                      border: `1px solid ${pass ? "rgba(0,255,136,0.2)" : "rgba(248,113,113,0.2)"}`,
-                    }}
-                  >
-                    {pass ? "PASS" : "FAIL"}
-                  </span>
-                  <span>{detail}</span>
-                </div>
-              </td>
-            </tr>
+                −{checks[k].weight}.00
+              </span>
+            </div>
           ))}
-        </tbody>
-      </table>
+          <div
+            className="flex justify-between py-3 mt-1"
+            style={{ borderTop: "1px solid var(--text)" }}
+          >
+            <span
+              className="text-[12px] uppercase tracking-[0.2em]"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Available uplift
+            </span>
+            <span
+              className="text-sm font-bold tabular-nums"
+              style={{ color: "var(--red)" }}
+            >
+              +{totalMissed}.00
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Foot rule */}
+      <div
+        className="flex justify-between mt-6 pt-4 text-[11px] uppercase tracking-[0.12em]"
+        style={{
+          color: "var(--text-muted)",
+          borderTop: "1px solid var(--text)",
+        }}
+      >
+        <span>Methodology · v0.4.2</span>
+        <span className="hidden sm:block">
+          —— continued: recommendations &amp; /llms.txt draft
+        </span>
+        <span>p. 01 / 03</span>
+      </div>
     </div>
   );
 }

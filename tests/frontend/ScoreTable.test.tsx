@@ -20,38 +20,46 @@ const CHECKS = {
 describe("ScoreTable", () => {
   it("renders all 8 check labels", () => {
     render(<ScoreTable checks={CHECKS} />);
-    expect(screen.getByText("/llms.txt file")).toBeInTheDocument();
-    expect(screen.getByText("robots.txt AI rules")).toBeInTheDocument();
-    expect(screen.getByText("sitemap.xml")).toBeInTheDocument();
-    expect(screen.getByText("JSON-LD structured data")).toBeInTheDocument();
-    expect(screen.getByText("OpenGraph tags")).toBeInTheDocument();
-    expect(screen.getByText("Title + meta description")).toBeInTheDocument();
-    expect(screen.getByText("Canonical URL")).toBeInTheDocument();
-    expect(screen.getByText("Clean content (Jina Reader)")).toBeInTheDocument();
+    expect(screen.getByText(/\/llms\.txt file/)).toBeInTheDocument();
+    expect(screen.getByText(/robots\.txt AI rules/)).toBeInTheDocument();
+    expect(screen.getByText(/sitemap\.xml/)).toBeInTheDocument();
+    expect(screen.getByText(/JSON-LD structured data/)).toBeInTheDocument();
+    expect(screen.getByText(/OpenGraph tags/)).toBeInTheDocument();
+    expect(screen.getByText(/Title \+ meta description/)).toBeInTheDocument();
+    expect(screen.getByText(/Canonical URL/)).toBeInTheDocument();
+    expect(screen.getByText(/Clean content/)).toBeInTheDocument();
   });
 
-  it("shows PASS badges for passing checks", () => {
+  it("shows Credited section with passing count", () => {
     render(<ScoreTable checks={CHECKS} />);
-    const passBadges = screen.getAllByText("PASS");
-    expect(passBadges.length).toBe(5);
+    expect(screen.getByText(/Credited — 5 items/)).toBeInTheDocument();
   });
 
-  it("shows FAIL badges for failing checks", () => {
+  it("shows Forfeited section with failing count", () => {
     render(<ScoreTable checks={CHECKS} />);
-    const failBadges = screen.getAllByText("FAIL");
-    expect(failBadges.length).toBe(3);
+    expect(screen.getByText(/Forfeited — 3 items/)).toBeInTheDocument();
   });
 
-  it("shows +weight for passing checks", () => {
+  it("shows +weight.00 for passing checks", () => {
     render(<ScoreTable checks={CHECKS} />);
-    expect(screen.getByText("+25")).toBeInTheDocument();
-    // both json_ld and clean_content are 15pts — getAllByText handles multiples
-    expect(screen.getAllByText("+15").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("+25.00").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("+15.00").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("shows 0 for failing checks", () => {
+  it("shows -weight.00 for failing checks", () => {
     render(<ScoreTable checks={CHECKS} />);
-    const zeros = screen.getAllByText("0");
-    expect(zeros.length).toBeGreaterThanOrEqual(3);
+    expect(screen.getAllByText("−10.00").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("−5.00")).toBeInTheDocument();
+  });
+
+  it("shows Subtotal and Available uplift lines", () => {
+    render(<ScoreTable checks={CHECKS} />);
+    expect(screen.getByText("Subtotal")).toBeInTheDocument();
+    expect(screen.getByText("Available uplift")).toBeInTheDocument();
+  });
+
+  it("shows foot rule with methodology", () => {
+    render(<ScoreTable checks={CHECKS} />);
+    expect(screen.getByText(/Methodology/)).toBeInTheDocument();
   });
 });

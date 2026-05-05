@@ -33,51 +33,53 @@ afterEach(() => {
 });
 
 describe("ShareCard", () => {
-  it("renders domain and score", () => {
+  it("renders score in challenge headline", () => {
     render(<ShareCard {...DEFAULT_PROPS} />);
-    expect(screen.getByText("stripe.com")).toBeInTheDocument();
-    expect(screen.getByText("55")).toBeInTheDocument();
+    expect(screen.getAllByText(/55\/100/).length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders grade badge", () => {
+  it("renders domain in header", () => {
     render(<ShareCard {...DEFAULT_PROPS} />);
-    expect(screen.getByText("Good")).toBeInTheDocument();
+    expect(screen.getAllByText(/stripe\.com/).length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders passing count", () => {
+  it("renders passing count in score box", () => {
     render(<ShareCard {...DEFAULT_PROPS} />);
-    expect(screen.getByText(/4 of 8 checks passing/)).toBeInTheDocument();
+    expect(screen.getByText(/4\/8 passing/)).toBeInTheDocument();
   });
 
-  it("renders all check labels", () => {
+  it("renders check short labels in grid", () => {
     render(<ShareCard {...DEFAULT_PROPS} />);
     expect(screen.getByText("/llms.txt")).toBeInTheDocument();
     expect(screen.getByText("JSON-LD")).toBeInTheDocument();
     expect(screen.getByText("robots.txt")).toBeInTheDocument();
-    expect(screen.getByText("sitemap.xml")).toBeInTheDocument();
   });
 
-  it("renders share buttons", () => {
+  it("renders post & challenge button", () => {
     render(<ShareCard {...DEFAULT_PROPS} />);
-    expect(screen.getByText("Share on X")).toBeInTheDocument();
-    expect(screen.getByText("LinkedIn")).toBeInTheDocument();
-    expect(screen.getByText("Copy link")).toBeInTheDocument();
+    expect(screen.getByText(/Post.*challenge/i)).toBeInTheDocument();
   });
 
-  it("copy link button shows copied state", async () => {
+  it("renders linkedin and copy buttons", () => {
+    render(<ShareCard {...DEFAULT_PROPS} />);
+    expect(screen.getByText("in")).toBeInTheDocument();
+    expect(screen.getByText("⧉")).toBeInTheDocument();
+  });
+
+  it("copy button shows check mark when clicked", async () => {
     jest.useFakeTimers();
     render(<ShareCard {...DEFAULT_PROPS} />);
-    const copyBtn = screen.getByText("Copy link");
+    const copyBtn = screen.getByTestId("copy-btn");
     await act(async () => { fireEvent.click(copyBtn); });
-    expect(screen.getByText("✓ Copied")).toBeInTheDocument();
+    expect(copyBtn).toHaveTextContent("✓");
     act(() => { jest.advanceTimersByTime(2100); });
-    expect(screen.getByText("Copy link")).toBeInTheDocument();
+    expect(copyBtn).toHaveTextContent("⧉");
     jest.useRealTimers();
   });
 
-  it("X button opens twitter intent", () => {
+  it("post & challenge opens twitter intent", () => {
     render(<ShareCard {...DEFAULT_PROPS} />);
-    fireEvent.click(screen.getByText("Share on X"));
+    fireEvent.click(screen.getByText(/Post.*challenge/i));
     expect(window.open).toHaveBeenCalledWith(
       expect.stringContaining("twitter.com/intent/tweet"),
       "_blank",
@@ -85,9 +87,9 @@ describe("ShareCard", () => {
     );
   });
 
-  it("LinkedIn button opens linkedin share", () => {
+  it("linkedin button opens linkedin share", () => {
     render(<ShareCard {...DEFAULT_PROPS} />);
-    fireEvent.click(screen.getByText("LinkedIn"));
+    fireEvent.click(screen.getByText("in"));
     expect(window.open).toHaveBeenCalledWith(
       expect.stringContaining("linkedin.com/sharing"),
       "_blank",
@@ -95,9 +97,9 @@ describe("ShareCard", () => {
     );
   });
 
-  it("copy link writes share URL to clipboard", async () => {
+  it("copy writes share URL to clipboard", async () => {
     render(<ShareCard {...DEFAULT_PROPS} />);
-    await act(async () => { fireEvent.click(screen.getByText("Copy link")); });
+    await act(async () => { fireEvent.click(screen.getByTestId("copy-btn")); });
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
       expect.stringContaining("/score?url=stripe.com")
     );
