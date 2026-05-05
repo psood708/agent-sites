@@ -1,23 +1,53 @@
 @import "tailwindcss";
 
-:root {
+/* ── Dark theme (default) ── */
+:root,
+[data-theme="dark"] {
   --bg: #080808;
   --bg-card: #0e0e0e;
   --bg-hover: #141414;
   --border: #1c1c1c;
-  --border-bright: #282828;
+  --border-bright: #2a2a2a;
   --text: #e2e2e2;
   --text-muted: #4a4a4a;
-  --green: #00ff88;
-  --green-dim: rgba(0,255,136,0.08);
+  --blue: #38bdf8;
+  --blue-dim: rgba(56, 189, 248, 0.08);
+  --blue-border: rgba(56, 189, 248, 0.25);
+  --green: #4ade80;
+  --green-dim: rgba(74, 222, 128, 0.08);
   --amber: #f59e0b;
-  --amber-dim: rgba(245,158,11,0.08);
+  --amber-dim: rgba(245, 158, 11, 0.08);
   --red: #f87171;
-  --red-dim: rgba(248,113,113,0.08);
-  --grid: rgba(255,255,255,0.03);
+  --red-dim: rgba(248, 113, 113, 0.08);
+  --grid: rgba(255, 255, 255, 0.025);
+}
+
+/* ── Light theme ── */
+[data-theme="light"] {
+  --bg: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-hover: #f8fafc;
+  --border: #e2e8f0;
+  --border-bright: #cbd5e1;
+  --text: #0f172a;
+  --text-muted: #94a3b8;
+  --blue: #0284c7;
+  --blue-dim: rgba(2, 132, 199, 0.07);
+  --blue-border: rgba(2, 132, 199, 0.3);
+  --green: #16a34a;
+  --green-dim: rgba(22, 163, 74, 0.07);
+  --amber: #d97706;
+  --amber-dim: rgba(217, 119, 6, 0.07);
+  --red: #dc2626;
+  --red-dim: rgba(220, 38, 38, 0.07);
+  --grid: rgba(0, 0, 0, 0.04);
 }
 
 * { box-sizing: border-box; }
+
+html {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
 
 body {
   background-color: var(--bg);
@@ -28,6 +58,7 @@ body {
     linear-gradient(var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px);
   background-size: 28px 28px;
+  transition: background-color 0.2s ease;
 }
 
 @keyframes fade-up {
@@ -41,15 +72,13 @@ body {
 }
 
 @keyframes scan {
-  0%   { transform: translateY(0); opacity: 0; }
-  5%   { opacity: 1; }
-  95%  { opacity: 1; }
-  100% { transform: translateY(120px); opacity: 0; }
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
 }
 
 @keyframes pulse-border {
-  0%, 100% { border-color: var(--green); }
-  50%       { border-color: rgba(0,255,136,0.3); }
+  0%, 100% { border-color: var(--blue); }
+  50%       { border-color: var(--blue-border); }
 }
 
 .fade-up   { animation: fade-up 0.35s ease both; }
@@ -61,11 +90,10 @@ body {
 .cursor::after {
   content: '▊';
   animation: blink 1s step-end infinite;
-  color: var(--green);
+  color: var(--blue);
 }
 
-.scanning { animation: scan 1.8s ease-in-out infinite; }
-.pulsing-border { animation: pulse-border 1.4s ease-in-out infinite; }
+.scanning { animation: scan 1.4s ease-in-out infinite; }
 
 ::-webkit-scrollbar       { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }

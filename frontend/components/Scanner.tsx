@@ -5,6 +5,7 @@ import ScoreGauge from "./ScoreGauge";
 import ScoreTable from "./ScoreTable";
 import RecommendationsPanel from "./RecommendationsPanel";
 import LlmsTxtPanel from "./LlmsTxtPanel";
+import ShareCard from "./ShareCard";
 
 interface ScanResult {
   url: string;
@@ -19,8 +20,8 @@ interface ScanResult {
   llms_txt_draft: string;
 }
 
-export default function Scanner() {
-  const [url, setUrl] = useState("");
+export default function Scanner({ initialUrl }: { initialUrl?: string }) {
+  const [url, setUrl] = useState(initialUrl ?? "");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,9 +68,9 @@ export default function Scanner() {
         <div
           className="inline-block text-xs uppercase tracking-widest mb-6 px-3 py-1 rounded-sm"
           style={{
-            color: "var(--green)",
-            border: "1px solid rgba(0,255,136,0.2)",
-            background: "var(--green-dim)",
+            color: "var(--blue)",
+            border: "1px solid var(--blue-border)",
+            background: "var(--blue-dim)",
           }}
         >
           Agent Readiness Scanner
@@ -114,7 +115,7 @@ export default function Scanner() {
               }}
               onFocus={(e) =>
                 ((e.target as HTMLElement).style.borderColor =
-                  "rgba(0,255,136,0.4)")
+                  "var(--blue-border)")
               }
               onBlur={(e) =>
                 ((e.target as HTMLElement).style.borderColor =
@@ -127,9 +128,9 @@ export default function Scanner() {
             disabled={loading || !url.trim()}
             className="px-6 py-3 text-sm font-medium rounded-sm transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              background: loading ? "var(--green-dim)" : "var(--green)",
-              color: "#000",
-              border: "1px solid var(--green)",
+              background: loading ? "var(--blue-dim)" : "var(--blue)",
+              color: "var(--bg)",
+              border: "1px solid var(--blue)",
               fontFamily: "inherit",
             }}
           >
@@ -153,7 +154,7 @@ export default function Scanner() {
           >
             <div
               className="scanning absolute inset-y-0 left-0 w-1/3 rounded-full"
-              style={{ background: "var(--green)" }}
+              style={{ background: "var(--blue)" }}
             />
           </div>
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -184,6 +185,13 @@ export default function Scanner() {
           <ScoreTable checks={result.checks} />
           <RecommendationsPanel recommendations={result.recommendations} />
           <LlmsTxtPanel content={result.llms_txt_draft} domain={domain} />
+          <ShareCard
+            url={result.url}
+            domain={domain}
+            score={result.score}
+            grade={result.grade}
+            checks={result.checks}
+          />
         </div>
       )}
     </div>
