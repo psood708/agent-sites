@@ -1,8 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
 
-const NAV_LINKS = ["Report", "API", "Pricing"];
+const NAV_LINKS: { label: string; href: string }[] = [
+  { label: "Report", href: "/reports" },
+  { label: "API", href: "#" },
+  { label: "Pricing", href: "#" },
+];
 
 export default function NavBar() {
   return (
@@ -29,11 +34,12 @@ export default function NavBar() {
       {/* Right */}
       <div className="flex items-center gap-4">
         <div className="hidden sm:flex items-center gap-5 text-[11px] uppercase tracking-[0.15em]">
-          {NAV_LINKS.map((label) => (
-            <span
+          {NAV_LINKS.map(({ label, href }) => (
+            <Link
               key={label}
-              className="cursor-pointer transition-colors"
-              style={{ color: "var(--text-muted)" }}
+              href={href}
+              className="transition-colors"
+              style={{ color: "var(--text-muted)", textDecoration: "none" }}
               onMouseEnter={(e) =>
                 ((e.currentTarget as HTMLElement).style.color = "var(--text)")
               }
@@ -43,7 +49,7 @@ export default function NavBar() {
               }
             >
               {label}
-            </span>
+            </Link>
           ))}
         </div>
         <button
