@@ -2,6 +2,7 @@ import os
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -61,9 +62,10 @@ def store_scan(result: dict, ip: str = "") -> None:
         return
     try:
         passing = sum(1 for c in result["checks"].values() if c.get("pass"))
+        hostname = urlparse(result["origin"]).hostname or result["origin"]
         client.table("public_scans").insert({
             "url": result["url"],
-            "domain": result["origin"],
+            "domain": hostname,
             "score": result["score"],
             "grade": result["grade"],
             "checks": result["checks"],

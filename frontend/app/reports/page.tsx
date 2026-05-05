@@ -112,7 +112,8 @@ export default async function ReportsPage() {
 
           {scans.map((row, i) => {
             const color = scoreColor(row.score);
-            const shareUrl = `/score?url=${encodeURIComponent(row.domain)}&score=${row.score}&grade=${encodeURIComponent(row.grade)}&passing=${row.passing}&total=${TOTAL_CHECKS}`;
+            const displayDomain = row.domain.replace(/^https?:\/\//, "");
+            const shareUrl = `/score?url=${encodeURIComponent(displayDomain)}&score=${row.score}&grade=${encodeURIComponent(row.grade)}&passing=${row.passing}&total=${TOTAL_CHECKS}`;
             return (
               <a
                 key={i}
@@ -134,7 +135,7 @@ export default async function ReportsPage() {
               >
                 {/* Domain */}
                 <span className="text-sm font-medium" style={{ color: "var(--text)" }}>
-                  {row.domain}
+                  {displayDomain}
                 </span>
 
                 {/* Score */}
