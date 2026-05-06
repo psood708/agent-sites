@@ -5,8 +5,8 @@ import ThemeToggle from "./ThemeToggle";
 
 const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Report", href: "/reports" },
-  { label: "API", href: "#" },
-  { label: "Pricing", href: "#" },
+  { label: "API", href: "/api-docs" },
+  { label: "Pricing", href: "/pricing" },
 ];
 
 export default function NavBar() {
@@ -52,28 +52,25 @@ export default function NavBar() {
             </Link>
           ))}
         </div>
-        <button
+        <Link
+          href="/signin"
           className="hidden sm:block text-[11px] uppercase tracking-[0.15em] px-3 py-1.5"
           style={{
             border: "1px solid var(--border-bright)",
             color: "var(--text-muted)",
-            background: "transparent",
-            fontFamily: "inherit",
-            cursor: "pointer",
+            textDecoration: "none",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor =
-              "var(--blue-border)";
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--blue-border)";
             (e.currentTarget as HTMLElement).style.color = "var(--text)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor =
-              "var(--border-bright)";
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--border-bright)";
             (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
           }}
         >
           Sign in
-        </button>
+        </Link>
         <ThemeToggle />
       </div>
     </nav>
