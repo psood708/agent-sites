@@ -118,20 +118,13 @@ export default async function ReportsPage() {
               <a
                 key={i}
                 href={shareUrl}
-                className="grid items-center py-3 transition-all"
+                className="scan-row grid items-center py-3 transition-all"
                 style={{
                   gridTemplateColumns: "1fr 64px 80px 48px 80px",
                   borderBottom: "1px dotted var(--border)",
                   textDecoration: "none",
                   color: "inherit",
                 }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLElement).style.background =
-                    "var(--bg-card)")
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLElement).style.background = "transparent")
-                }
               >
                 {/* Domain */}
                 <span className="text-sm font-medium" style={{ color: "var(--text)" }}>
