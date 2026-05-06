@@ -12,7 +12,7 @@ app = FastAPI(title="AgentReadiness API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://agent-sites-five.vercel.app"],
     allow_methods=["POST", "GET"],
     allow_headers=["*"],
 )
