@@ -1,0 +1,35 @@
+# AgentReadiness
+
+> Score any website for AI agent readiness in seconds. Get a free /llms.txt.
+
+## About
+- URL: https://agent-sites-five.vercel.app
+- Category: Developer tool
+- Free to use
+
+## What we do
+AgentReadiness scans any public URL and scores it across 8 signals that determine
+how well AI agents (ChatGPT, Claude, Perplexity) can read and understand a website:
+
+- /llms.txt file — the emerging standard for AI context
+- robots.txt AI agent rules (GPTBot, ClaudeBot, anthropic-ai, etc.)
+- sitemap.xml — helps agents discover all pages
+- JSON-LD structured data — machine-readable page metadata
+- OpenGraph tags — title, description, image for agents and social
+- Title + meta description — basic but critical
+- Canonical URL — prevents duplicate content confusion
+- Clean readable content — extracted via Jina Reader
+
+## Key pages
+- https://agent-sites-five.vercel.app/ — main scanner
+- https://agent-sites-five.vercel.app/reports — public scan log (last 24 hours)
+- https://agent-sites-five.vercel.app/pricing — upcoming paid plans
+- https://agent-sites-five.vercel.app/api-docs — upcoming REST API
+
+## Sitemap
+- https://agent-sites-five.vercel.app/sitemap.xml
+
+## Notes
+- All scans are public and cached for 24 hours per domain
+- Rate limit: 15 scans per IP per 24 hours
+- Built with FastAPI (Render) + Next.js (Vercel) + Supabase
