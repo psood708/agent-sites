@@ -100,3 +100,4 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
 
 .scan-row:hover { background: var(--bg-card); }
+.back-link:hover { color: var(--text) !important; }

@@ -56,6 +56,16 @@ export default async function ReportsPage() {
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 py-16">
+      {/* Back to scanner */}
+      <a
+        href="/"
+        className="inline-flex items-center gap-2 mb-8 text-[11px] uppercase tracking-[0.15em] back-link"
+        style={{ color: "var(--text-muted)", textDecoration: "none" }}
+      >
+        <span style={{ color: "var(--blue)" }}>←</span>
+        Scan a site
+      </a>
+
       {/* Header rail */}
       <div
         className="flex justify-between items-center pb-3 mb-8"
