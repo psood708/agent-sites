@@ -99,7 +99,7 @@ def check_rate_limit(ip: str, limit: int = 15) -> bool:
         return True  # fail open so a Supabase outage doesn't lock everyone out
 
 
-def get_recent_scans(hours: int = 24, limit: int = 100) -> list:
+def get_recent_scans(hours: int = 24) -> list:
     client = _get_client()
     if not client:
         return []
@@ -110,7 +110,6 @@ def get_recent_scans(hours: int = 24, limit: int = 100) -> list:
             .select("domain, score, grade, passing, scanned_at")
             .gt("scanned_at", cutoff)
             .order("scanned_at", desc=True)
-            .limit(limit)
             .execute()
         )
         return res.data or []
