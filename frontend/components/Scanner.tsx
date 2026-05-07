@@ -8,6 +8,13 @@ import RecommendationsPanel from "./RecommendationsPanel";
 import LlmsTxtPanel from "./LlmsTxtPanel";
 import ShareCard from "./ShareCard";
 
+interface StatsData {
+  total_scans: number;
+  avg_score: number;
+  grade_distribution: Record<string, number>;
+  check_pass_rates: Record<string, number>;
+}
+
 interface ScanResult {
   url: string;
   origin: string;
@@ -21,7 +28,13 @@ interface ScanResult {
   llms_txt_draft: string;
 }
 
-export default function Scanner({ initialUrl }: { initialUrl?: string }) {
+const CHECK_LABELS: Record<string, string> = {
+  llms_txt: "/llms.txt", robots_txt: "robots.txt AI rules", sitemap: "sitemap.xml",
+  json_ld: "JSON-LD", opengraph: "OpenGraph", meta: "Title + meta",
+  canonical: "Canonical URL", clean_content: "Clean content",
+};
+
+export default function Scanner({ initialUrl, stats }: { initialUrl?: string; stats: StatsData }) {
   const [url, setUrl] = useState(initialUrl ?? "");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
@@ -251,6 +264,28 @@ export default function Scanner({ initialUrl }: { initialUrl?: string }) {
               Join wishlist →
             </span>
           </Link>
+
+          {/* Live stats strip */}
+          {stats.total_scans > 0 && (() => {
+            const worstCheck = Object.entries(stats.check_pass_rates).sort((a, b) => a[1] - b[1])[0];
+            return (
+              <div
+                className="mt-4 grid grid-cols-3 text-center"
+                style={{ border: "1px solid var(--border)" }}
+              >
+                {[
+                  { label: "Sites scanned", value: stats.total_scans.toLocaleString(), color: "var(--text)" },
+                  { label: "Avg score", value: `${stats.avg_score} / 100`, color: "var(--blue)" },
+                  { label: `${worstCheck ? Math.round(100 - worstCheck[1]) : 0}% miss`, value: worstCheck ? CHECK_LABELS[worstCheck[0]] : "—", color: "var(--red)" },
+                ].map(({ label, value, color }) => (
+                  <div key={label} className="px-3 py-3" style={{ borderRight: "1px solid var(--border)" }}>
+                    <div className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: "var(--text-muted)" }}>{label}</div>
+                    <div className="text-[12px] font-medium tabular-nums truncate" style={{ color }}>{value}</div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -296,6 +331,75 @@ export default function Scanner({ initialUrl }: { initialUrl?: string }) {
       {/* Results */}
       {result && (
         <div className="space-y-10">
+          {/* Proof + survey strip above results */}
+          {(() => {
+            const failedChecks = Object.entries(result.checks)
+              .filter(([, c]) => !c.pass)
+              .sort((a, b) => b[1].weight - a[1].weight)
+              .slice(0, 3);
+            return (
+              <div
+                className="grid grid-cols-1 sm:grid-cols-2 gap-0"
+                style={{ border: "1px solid var(--border)" }}
+              >
+                {/* Why it matters — failed checks */}
+                <div className="px-5 py-4" style={{ borderRight: "1px solid var(--border)" }}>
+                  <div className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--text-muted)" }}>
+                    Why this score matters
+                  </div>
+                  {failedChecks.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      {failedChecks.map(([key, check]) => (
+                        <div key={key} className="flex items-start gap-2">
+                          <span className="text-[11px] mt-0.5" style={{ color: "var(--red)" }}>✕</span>
+                          <div>
+                            <span className="text-[12px]" style={{ color: "var(--text)" }}>{check.label}</span>
+                            <span className="text-[11px] ml-2" style={{ color: "var(--text-muted)" }}>−{check.weight} pts</span>
+                          </div>
+                        </div>
+                      ))}
+                      <Link
+                        href="/why"
+                        className="mt-1 text-[11px] uppercase tracking-[0.12em]"
+                        style={{ color: "var(--blue)", textDecoration: "none" }}
+                      >
+                        Why these checks matter →
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="text-[12px]" style={{ color: "var(--green)" }}>
+                      All checks passed — your site is fully agent-ready.
+                    </p>
+                  )}
+                </div>
+                {/* Survey CTA */}
+                <Link
+                  href="/pricing#survey"
+                  className="px-5 py-4 flex flex-col justify-between transition-all"
+                  style={{ textDecoration: "none", background: "var(--bg-card)", display: "flex" }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "var(--blue-dim)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "var(--bg-card)";
+                  }}
+                >
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: "var(--blue)" }}>
+                      Want score alerts + history?
+                    </div>
+                    <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+                      Join the wishlist. 60s survey, no spam. Your answers shape what ships next.
+                    </p>
+                  </div>
+                  <span className="mt-3 text-[11px] uppercase tracking-[0.15em]" style={{ color: "var(--blue)" }}>
+                    Join wishlist →
+                  </span>
+                </Link>
+              </div>
+            );
+          })()}
+
           <ScoreGauge score={result.score} grade={result.grade} domain={domain} />
           <ScoreTable checks={result.checks} />
           <RecommendationsPanel recommendations={result.recommendations} />
@@ -308,39 +412,6 @@ export default function Scanner({ initialUrl }: { initialUrl?: string }) {
             checks={result.checks}
           />
 
-          {/* Post-scan wishlist CTA */}
-          <div style={{ borderTop: "1px solid var(--border)", paddingTop: "2rem" }}>
-            <Link
-              href="/pricing#survey"
-              className="flex items-center justify-between px-5 py-4 transition-all"
-              style={{
-                border: "1px solid var(--border)",
-                background: "var(--bg-card)",
-                textDecoration: "none",
-                display: "flex",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--blue-border)";
-                (e.currentTarget as HTMLElement).style.background = "var(--blue-dim)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-                (e.currentTarget as HTMLElement).style.background = "var(--bg-card)";
-              }}
-            >
-              <div className="flex flex-col gap-1">
-                <span className="text-[11px] uppercase tracking-[0.2em]" style={{ color: "var(--text)" }}>
-                  Want score drop alerts + scan history?
-                </span>
-                <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                  Join the wishlist — 60s survey, no spam.
-                </span>
-              </div>
-              <span className="text-[11px] uppercase tracking-[0.15em] ml-4 shrink-0" style={{ color: "var(--blue)" }}>
-                Join →
-              </span>
-            </Link>
-          </div>
         </div>
       )}
     </div>

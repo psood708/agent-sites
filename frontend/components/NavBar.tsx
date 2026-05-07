@@ -7,6 +7,7 @@ import ThemeToggle from "./ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_LINKS: { label: string; href: string }[] = [
+  { label: "Why it matters", href: "/why" },
   { label: "Report", href: "/reports" },
   { label: "API", href: "/api-docs" },
   { label: "Pricing", href: "/pricing" },

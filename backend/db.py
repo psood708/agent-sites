@@ -99,6 +99,48 @@ def check_rate_limit(ip: str, limit: int = 15) -> bool:
         return True  # fail open so a Supabase outage doesn't lock everyone out
 
 
+def get_stats() -> dict:
+    check_keys = ["llms_txt", "robots_txt", "sitemap", "json_ld",
+                  "opengraph", "meta", "canonical", "clean_content"]
+    empty: dict = {
+        "total_scans": 0,
+        "avg_score": 0.0,
+        "grade_distribution": {"Excellent": 0, "Good": 0, "Needs work": 0, "Poor": 0},
+        "check_pass_rates": {k: 0.0 for k in check_keys},
+    }
+    client = _get_client()
+    if not client:
+        return empty
+    try:
+        res = client.table("public_scans").select("score, grade, checks").execute()
+        rows = res.data or []
+        if not rows:
+            return empty
+        total = len(rows)
+        avg_score = round(sum(r["score"] for r in rows) / total, 1)
+        grade_dist: dict = {"Excellent": 0, "Good": 0, "Needs work": 0, "Poor": 0}
+        for r in rows:
+            g = r.get("grade", "")
+            if g in grade_dist:
+                grade_dist[g] += 1
+        pass_counts = {k: 0 for k in check_keys}
+        for r in rows:
+            checks = r.get("checks") or {}
+            for k in check_keys:
+                if isinstance(checks.get(k), dict) and checks[k].get("pass"):
+                    pass_counts[k] += 1
+        check_pass_rates = {k: round(pass_counts[k] / total * 100, 1) for k in check_keys}
+        return {
+            "total_scans": total,
+            "avg_score": avg_score,
+            "grade_distribution": grade_dist,
+            "check_pass_rates": check_pass_rates,
+        }
+    except Exception as e:
+        logger.error("get_stats failed: %s", e)
+        return empty
+
+
 def get_recent_scans(hours: int = 24) -> list:
     client = _get_client()
     if not client:

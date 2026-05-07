@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
 
 from scorer import scan
-from db import get_cached_scan, store_scan, check_rate_limit, get_recent_scans
+from db import get_cached_scan, store_scan, check_rate_limit, get_recent_scans, get_stats
 
 app = FastAPI(title="AgentReadiness API")
 
@@ -54,6 +54,11 @@ async def scan_url(req: ScanRequest, request: Request, bg: BackgroundTasks):
 @app.get("/recent")
 def recent_scans():
     return get_recent_scans()
+
+
+@app.get("/stats")
+def stats_endpoint():
+    return get_stats()
 
 
 @app.get("/health")
