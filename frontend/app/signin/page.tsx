@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ComingSoon from "@/components/ComingSoon";
+import SignInForm from "./SignInForm";
 
 export const metadata: Metadata = {
   title: "Sign In — AgentReadiness",
@@ -7,9 +7,41 @@ export const metadata: Metadata = {
 
 export default function SignInPage() {
   return (
-    <ComingSoon
-      title="Sign In"
-      description="Domain verification, score history, and agent analytics dashboards — coming in v2."
-    />
+    <div className="w-full max-w-md mx-auto px-4 py-16">
+      <a
+        href="/"
+        className="inline-flex items-center gap-2 mb-8 text-[11px] uppercase tracking-[0.15em]"
+        style={{ color: "var(--text-muted)", textDecoration: "none" }}
+      >
+        <span style={{ color: "var(--blue)" }}>←</span>
+        Back
+      </a>
+
+      <div
+        className="pb-3 mb-8"
+        style={{ borderBottom: "1px solid var(--text)" }}
+      >
+        <div className="flex gap-2.5 items-center">
+          <div className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--blue)" }} />
+          <span className="text-[11px] uppercase tracking-[0.2em]" style={{ color: "var(--text)" }}>
+            Sign In
+          </span>
+        </div>
+      </div>
+
+      <h1
+        className="text-5xl font-normal leading-[0.92] tracking-[-0.04em] m-0"
+        style={{ fontFamily: "'Times New Roman', Times, serif", color: "var(--text)" }}
+      >
+        Welcome
+        <br />
+        <em style={{ fontStyle: "italic", color: "var(--blue)" }}>back.</em>
+      </h1>
+      <p className="mt-5 text-sm" style={{ color: "var(--text-muted)" }}>
+        Enter your email and we'll send you a magic link — no password needed.
+      </p>
+
+      <SignInForm />
+    </div>
   );
 }

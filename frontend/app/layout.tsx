@@ -3,6 +3,7 @@ import { JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
 const mono = JetBrains_Mono({
@@ -30,11 +31,14 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <html lang="en" className={`${mono.variable} h-full antialiased`}>
       <head>
@@ -61,7 +65,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <NavBar />
+        <NavBar userEmail={user?.email ?? null} />
 
         <main className="flex-1">{children}</main>
         <Footer />

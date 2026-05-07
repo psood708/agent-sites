@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
+import { createClient } from "@/lib/supabase/client";
 
 const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Report", href: "/reports" },
@@ -11,9 +12,16 @@ const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Pricing", href: "/pricing" },
 ];
 
-export default function NavBar() {
+export default function NavBar({ userEmail }: { userEmail: string | null }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function signOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.refresh();
+  }
 
   function close() {
     setOpen(false);
@@ -65,25 +73,58 @@ export default function NavBar() {
               </Link>
             ))}
           </div>
-          <Link
-            href="/signin"
-            className="hidden sm:block text-[11px] uppercase tracking-[0.15em] px-3 py-1.5"
-            style={{
-              border: "1px solid var(--border-bright)",
-              color: "var(--text-muted)",
-              textDecoration: "none",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "var(--blue-border)";
-              (e.currentTarget as HTMLElement).style.color = "var(--text)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "var(--border-bright)";
-              (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
-            }}
-          >
-            Sign in
-          </Link>
+          {userEmail ? (
+            <div className="hidden sm:flex items-center gap-3">
+              <span
+                className="text-[11px] uppercase tracking-[0.1em] max-w-[140px] truncate"
+                style={{ color: "var(--text-muted)" }}
+                title={userEmail}
+              >
+                {userEmail}
+              </span>
+              <button
+                onClick={signOut}
+                className="text-[11px] uppercase tracking-[0.15em] px-3 py-1.5"
+                style={{
+                  border: "1px solid var(--border-bright)",
+                  color: "var(--text-muted)",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--blue-border)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--text)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border-bright)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
+                }}
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/signin"
+              className="hidden sm:block text-[11px] uppercase tracking-[0.15em] px-3 py-1.5"
+              style={{
+                border: "1px solid var(--border-bright)",
+                color: "var(--text-muted)",
+                textDecoration: "none",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--blue-border)";
+                (e.currentTarget as HTMLElement).style.color = "var(--text)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border-bright)";
+                (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
+              }}
+            >
+              Sign in
+            </Link>
+          )}
           <ThemeToggle />
 
           {/* Hamburger — mobile only */}
@@ -187,24 +228,48 @@ export default function NavBar() {
               ))}
             </div>
 
-            {/* Sign in */}
+            {/* Sign in / Sign out */}
             <div
               className="px-5 py-4 mt-auto"
               style={{ borderTop: "1px solid var(--border)" }}
             >
-              <Link
-                href="/signin"
-                onClick={close}
-                className="block w-full py-2.5 text-center text-[11px] uppercase tracking-[0.15em]"
-                style={{
-                  border: "1px solid var(--blue-border)",
-                  color: "var(--blue)",
-                  textDecoration: "none",
-                  background: "var(--blue-dim)",
-                }}
-              >
-                Sign in
-              </Link>
+              {userEmail ? (
+                <div className="flex flex-col gap-2">
+                  <span
+                    className="text-[10px] uppercase tracking-[0.15em] truncate"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {userEmail}
+                  </span>
+                  <button
+                    onClick={() => { close(); signOut(); }}
+                    className="block w-full py-2.5 text-center text-[11px] uppercase tracking-[0.15em]"
+                    style={{
+                      border: "1px solid var(--border-bright)",
+                      color: "var(--text-muted)",
+                      background: "transparent",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/signin"
+                  onClick={close}
+                  className="block w-full py-2.5 text-center text-[11px] uppercase tracking-[0.15em]"
+                  style={{
+                    border: "1px solid var(--blue-border)",
+                    color: "var(--blue)",
+                    textDecoration: "none",
+                    background: "var(--blue-dim)",
+                  }}
+                >
+                  Sign in
+                </Link>
+              )}
             </div>
           </div>
         </div>
