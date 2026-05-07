@@ -1,7 +1,8 @@
-import type { Config } from "jest";
-import path from "path";
+/* eslint-disable @typescript-eslint/no-require-imports */
+const path = require("path");
 
-const config: Config = {
+/** @type {import("jest").Config} */
+module.exports = {
   rootDir: path.resolve(__dirname, ".."),
   testEnvironment: "jsdom",
   transform: {
@@ -16,5 +17,3 @@ const config: Config = {
   testMatch: ["<rootDir>/tests/frontend/**/*.test.tsx"],
   moduleDirectories: ["node_modules", path.resolve(__dirname, "node_modules")],
 };
-
-export default config;
