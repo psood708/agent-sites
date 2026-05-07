@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import ScoreGauge from "./ScoreGauge";
 import ScoreTable from "./ScoreTable";
 import RecommendationsPanel from "./RecommendationsPanel";
@@ -210,6 +211,46 @@ export default function Scanner({ initialUrl }: { initialUrl?: string }) {
               </button>
             </div>
           </form>
+
+          {/* Wishlist CTA */}
+          <Link
+            href="/pricing#survey"
+            className="mt-6 flex items-center justify-between px-4 py-3 transition-all"
+            style={{
+              border: "1px solid var(--border)",
+              background: "var(--bg-card)",
+              textDecoration: "none",
+              display: "flex",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor = "var(--blue-border)";
+              (e.currentTarget as HTMLElement).style.background = "var(--blue-dim)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+              (e.currentTarget as HTMLElement).style.background = "var(--bg-card)";
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--blue)", flexShrink: 0 }} />
+              <span className="text-[11px] uppercase tracking-[0.15em]" style={{ color: "var(--text-muted)" }}>
+                Help shape what we build
+              </span>
+              <span
+                className="text-[9px] uppercase tracking-[0.12em] px-1.5 py-0.5"
+                style={{
+                  color: "var(--blue)",
+                  border: "1px solid var(--blue-border)",
+                  background: "var(--blue-dim)",
+                }}
+              >
+                60s survey
+              </span>
+            </div>
+            <span className="text-[11px] uppercase tracking-[0.15em]" style={{ color: "var(--blue)" }}>
+              Join wishlist →
+            </span>
+          </Link>
         </div>
       )}
 
@@ -266,6 +307,40 @@ export default function Scanner({ initialUrl }: { initialUrl?: string }) {
             grade={result.grade}
             checks={result.checks}
           />
+
+          {/* Post-scan wishlist CTA */}
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: "2rem" }}>
+            <Link
+              href="/pricing#survey"
+              className="flex items-center justify-between px-5 py-4 transition-all"
+              style={{
+                border: "1px solid var(--border)",
+                background: "var(--bg-card)",
+                textDecoration: "none",
+                display: "flex",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--blue-border)";
+                (e.currentTarget as HTMLElement).style.background = "var(--blue-dim)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                (e.currentTarget as HTMLElement).style.background = "var(--bg-card)";
+              }}
+            >
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-[0.2em]" style={{ color: "var(--text)" }}>
+                  Want score drop alerts + scan history?
+                </span>
+                <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                  Join the wishlist — 60s survey, no spam.
+                </span>
+              </div>
+              <span className="text-[11px] uppercase tracking-[0.15em] ml-4 shrink-0" style={{ color: "var(--blue)" }}>
+                Join →
+              </span>
+            </Link>
+          </div>
         </div>
       )}
     </div>
