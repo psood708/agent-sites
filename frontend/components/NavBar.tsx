@@ -16,7 +16,7 @@ export default function NavBar() {
       style={{ borderBottom: "1px solid var(--border)" }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-2.5">
+      <Link href="/" style={{ textDecoration: "none" }} className="flex items-center gap-2.5">
         <div
           className="w-[22px] h-[22px] flex items-center justify-center shrink-0"
           style={{ border: "1px solid var(--blue)", background: "var(--blue-dim)" }}
@@ -29,7 +29,7 @@ export default function NavBar() {
         >
           agentreadiness
         </span>
-      </div>
+      </Link>
 
       {/* Right */}
       <div className="flex items-center gap-4">

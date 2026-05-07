@@ -106,13 +106,13 @@ export default function SurveySection() {
 
   return (
     <section
-      className="w-full max-w-5xl mx-auto px-4 pb-20"
+      className="w-full max-w-5xl mx-auto px-4 pb-16"
       id="survey"
     >
-      {/* Divider */}
+      {/* Header */}
       <div
-        className="mb-12 pt-12"
-        style={{ borderTop: "1px solid var(--border)" }}
+        className="mb-12 pt-16 pb-12"
+        style={{ borderBottom: "1px solid var(--border)" }}
       >
         <span
           className="text-[10px] uppercase tracking-[0.3em]"

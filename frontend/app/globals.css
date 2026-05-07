@@ -9,7 +9,7 @@
   --border: #1c1c1c;
   --border-bright: #2a2a2a;
   --text: #e2e2e2;
-  --text-muted: #4a4a4a;
+  --text-muted: #888888;
   --blue: #38bdf8;
   --blue-dim: rgba(56, 189, 248, 0.08);
   --blue-border: rgba(56, 189, 248, 0.25);
@@ -30,7 +30,7 @@
   --border: #e2e8f0;
   --border-bright: #cbd5e1;
   --text: #0f172a;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
   --blue: #0284c7;
   --blue-dim: rgba(2, 132, 199, 0.07);
   --blue-border: rgba(2, 132, 199, 0.3);
