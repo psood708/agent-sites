@@ -63,7 +63,9 @@ export default function Scanner({ initialUrl }: { initialUrl?: string }) {
     if (result) performScan(result.url);
   }
 
-  const domain = result ? new URL(result.origin).hostname : "";
+  const domain = result
+    ? (() => { try { return new URL(result.origin).hostname; } catch { return result.origin.replace(/^https?:\/\//, "").split("/")[0]; } })()
+    : "";
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-24">

@@ -42,9 +42,10 @@ def get_cached_scan(url: str) -> Optional[dict]:
         )
         if res.data:
             row = res.data[0]
+            parsed = urlparse(row["url"])
             return {
                 "url": row["url"],
-                "origin": row["domain"],
+                "origin": f"{parsed.scheme}://{parsed.netloc}",
                 "score": row["score"],
                 "grade": row["grade"],
                 "checks": row["checks"],
