@@ -1,4 +1,4 @@
--- Run this in the Supabase SQL editor to create the wishlist table
+-- Run this in the Supabase SQL editor
 
 create table if not exists wishlist (
   id          bigserial primary key,
@@ -7,5 +7,11 @@ create table if not exists wishlist (
   created_at  timestamptz not null default now()
 );
 
--- Index for dedup lookups
 create index if not exists wishlist_email_idx on wishlist (email);
+
+-- Allow public inserts (this is a signup form — anyone can join the wishlist)
+alter table wishlist enable row level security;
+
+create policy "public can insert wishlist"
+  on wishlist for insert
+  with check (true);
