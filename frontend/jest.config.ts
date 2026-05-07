@@ -1,7 +1,7 @@
-const path = require("path");
+import type { Config } from "jest";
+import path from "path";
 
-/** @type {import("jest").Config} */
-module.exports = {
+const config: Config = {
   rootDir: path.resolve(__dirname, ".."),
   testEnvironment: "jsdom",
   transform: {
@@ -16,3 +16,5 @@ module.exports = {
   testMatch: ["<rootDir>/tests/frontend/**/*.test.tsx"],
   moduleDirectories: ["node_modules", path.resolve(__dirname, "node_modules")],
 };
+
+export default config;

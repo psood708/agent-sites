@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 const FEATURES: [string, string | boolean, string | boolean, string | boolean][] = [
   ["Public scans",          "15 / day",    "Unlimited",   "Unlimited"],
@@ -241,7 +242,7 @@ export default function PricingClient() {
                 Get started →
               </CheckoutButton>
             ) : (
-              <a
+              <Link
                 href="/"
                 className="w-full py-2.5 text-[11px] uppercase tracking-[0.15em] text-center transition-all"
                 style={{
@@ -252,7 +253,7 @@ export default function PricingClient() {
                 }}
               >
                 Start scanning →
-              </a>
+              </Link>
             )}
           </div>
         ))}
@@ -305,7 +306,7 @@ export default function PricingClient() {
         style={{ borderTop: "1px solid var(--text)", color: "var(--text-muted)" }}
       >
         <span>All plans include full 8-check scoring. No credit card required for Free.</span>
-        <a href="/" style={{ color: "var(--blue)", textDecoration: "none" }}>← Back to scanner</a>
+        <Link href="/" style={{ color: "var(--blue)", textDecoration: "none" }}>← Back to scanner</Link>
       </div>
     </div>
   );

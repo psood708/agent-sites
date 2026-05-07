@@ -1,3 +1,4 @@
+import Link from "next/link";
 import PixelAvatar from "./PixelAvatar";
 
 interface Props {
@@ -29,13 +30,13 @@ export default function ComingSoon({ title, description }: Props) {
         </p>
       </div>
 
-      <a
+      <Link
         href="/"
         className="text-[11px] uppercase tracking-[0.15em]"
         style={{ color: "var(--blue)", textDecoration: "none" }}
       >
         ← Back to scanner
-      </a>
+      </Link>
     </div>
   );
 }

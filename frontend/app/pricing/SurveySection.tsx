@@ -278,13 +278,13 @@ export default function SurveySection() {
                 className="text-[10px] uppercase tracking-[0.2em] mb-4"
                 style={{ color: "var(--green)" }}
               >
-                ✓ You're on the list
+                ✓ You&apos;re on the list
               </div>
               <p
                 className="text-[15px] font-medium mb-2"
                 style={{ color: "var(--text)" }}
               >
-                Thanks — we'll reach out when Base launches.
+                Thanks — we&apos;ll reach out when Base launches.
               </p>
               <p className="text-[13px]" style={{ color: "var(--text-muted)" }}>
                 Your answers help us prioritise. Expect one email, no newsletters.

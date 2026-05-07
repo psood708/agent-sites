@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import SignInForm from "./SignInForm";
 
 export const metadata: Metadata = {
@@ -8,14 +9,14 @@ export const metadata: Metadata = {
 export default function SignInPage() {
   return (
     <div className="w-full max-w-md mx-auto px-4 py-16">
-      <a
+      <Link
         href="/"
         className="inline-flex items-center gap-2 mb-8 text-[11px] uppercase tracking-[0.15em]"
         style={{ color: "var(--text-muted)", textDecoration: "none" }}
       >
         <span style={{ color: "var(--blue)" }}>←</span>
         Back
-      </a>
+      </Link>
 
       <div
         className="pb-3 mb-8"
@@ -38,7 +39,7 @@ export default function SignInPage() {
         <em style={{ fontStyle: "italic", color: "var(--blue)" }}>back.</em>
       </h1>
       <p className="mt-5 text-sm" style={{ color: "var(--text-muted)" }}>
-        Enter your email and we'll send you a magic link — no password needed.
+        Enter your email and we&apos;ll send you a magic link — no password needed.
       </p>
 
       <SignInForm />

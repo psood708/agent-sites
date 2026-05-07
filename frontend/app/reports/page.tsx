@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -97,14 +98,14 @@ export default async function ReportsPage({
   return (
     <div className="w-full max-w-3xl mx-auto px-4 py-16">
       {/* Back to scanner */}
-      <a
+      <Link
         href="/"
         className="inline-flex items-center gap-2 mb-8 text-[11px] uppercase tracking-[0.15em] back-link"
         style={{ color: "var(--text-muted)", textDecoration: "none" }}
       >
         <span style={{ color: "var(--blue)" }}>←</span>
         Scan a site
-      </a>
+      </Link>
 
       {/* Header rail */}
       <div
@@ -288,9 +289,9 @@ export default async function ReportsPage({
         <div className="mt-12 text-center">
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             No scans yet.{" "}
-            <a href="/" style={{ color: "var(--blue)", textDecoration: "none" }}>
+            <Link href="/" style={{ color: "var(--blue)", textDecoration: "none" }}>
               Scan the first site →
-            </a>
+            </Link>
           </p>
         </div>
       )}
