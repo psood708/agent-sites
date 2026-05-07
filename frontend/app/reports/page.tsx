@@ -16,6 +16,33 @@ interface ScanRow {
 }
 
 const TOTAL_CHECKS = 8;
+const PAGE_SIZE = 50;
+
+type SearchParams = Promise<{ page?: string; range?: string }>;
+
+const RANGES = [
+  { label: "All", key: "all" },
+  { label: "Excellent  80+", key: "excellent" },
+  { label: "Good  60–79", key: "good" },
+  { label: "Needs Work  40–59", key: "needs-work" },
+  { label: "Poor  <40", key: "poor" },
+];
+
+function filterByRange(scans: ScanRow[], range: string): ScanRow[] {
+  if (range === "excellent") return scans.filter((s) => s.score >= 80);
+  if (range === "good") return scans.filter((s) => s.score >= 60 && s.score < 80);
+  if (range === "needs-work") return scans.filter((s) => s.score >= 40 && s.score < 60);
+  if (range === "poor") return scans.filter((s) => s.score < 40);
+  return scans;
+}
+
+function buildUrl(range: string, page: number): string {
+  const sp = new URLSearchParams();
+  if (range !== "all") sp.set("range", range);
+  if (page > 1) sp.set("page", String(page));
+  const qs = sp.toString();
+  return qs ? `/reports?${qs}` : "/reports";
+}
 
 function timeAgo(ts: string): string {
   const diff = Date.now() - new Date(ts).getTime();
@@ -45,14 +72,27 @@ async function fetchScans(): Promise<ScanRow[]> {
   }
 }
 
-export default async function ReportsPage() {
+export default async function ReportsPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const { page: pageParam, range: rangeParam } = await searchParams;
   const scans = await fetchScans();
+
+  const range = RANGES.some((r) => r.key === rangeParam) ? (rangeParam ?? "all") : "all";
+  const filtered = filterByRange(scans, range);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const page = Math.min(Math.max(1, parseInt(pageParam ?? "1") || 1), totalPages);
+  const pageScans = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const today = new Date().toLocaleDateString("en-US", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   });
+
+  const rangeLabel = range !== "all" ? ` · ${RANGES.find((r) => r.key === range)?.label}` : "";
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 py-16">
@@ -96,100 +136,153 @@ export default async function ReportsPage() {
         </h1>
         <p className="mt-5 text-sm" style={{ color: "var(--text-muted)" }}>
           {scans.length > 0
-            ? `${scans.length} scan${scans.length !== 1 ? "s" : ""} recorded. Results cached for 24 hours per domain.`
+            ? `${filtered.length} scan${filtered.length !== 1 ? "s" : ""}${rangeLabel} · ${scans.length} total in 24 h · cached per domain.`
             : "No scans recorded yet, or database not configured."}
         </p>
       </div>
 
-      {/* Table */}
-      {scans.length > 0 ? (
-        <div className="mt-8">
-          {/* Column headers */}
-          <div
-            className="reports-grid text-[10px] uppercase tracking-[0.2em] pb-2.5"
-            style={{
-              color: "var(--text-muted)",
-              borderBottom: "1px solid var(--border)",
-            }}
-          >
-            <span>Domain</span>
-            <span className="text-right">Score</span>
-            <span className="text-center">Grade</span>
-            <span className="reports-col-checks text-right">Checks</span>
-            <span className="reports-col-time text-right">Time</span>
-          </div>
-
-          {scans.map((row, i) => {
-            const color = scoreColor(row.score);
-            const displayDomain = row.domain.replace(/^https?:\/\//, "");
-            const shareUrl = `/score?url=${encodeURIComponent(displayDomain)}&score=${row.score}&grade=${encodeURIComponent(row.grade)}&passing=${row.passing}&total=${TOTAL_CHECKS}`;
+      {/* Score-range filter */}
+      {scans.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-8">
+          {RANGES.map((r) => {
+            const isActive = r.key === range;
             return (
               <a
-                key={i}
-                href={shareUrl}
-                className="scan-row reports-grid items-center py-3 transition-all"
+                key={r.key}
+                href={buildUrl(r.key, 1)}
+                className="text-[10px] uppercase tracking-[0.15em] px-3 py-1.5"
                 style={{
-                  borderBottom: "1px dotted var(--border)",
+                  color: isActive ? "var(--blue)" : "var(--text-muted)",
+                  background: isActive ? "var(--blue-dim)" : "transparent",
+                  border: `1px solid ${isActive ? "var(--blue-border)" : "var(--border)"}`,
                   textDecoration: "none",
-                  color: "inherit",
+                  whiteSpace: "nowrap",
                 }}
               >
-                {/* Domain */}
-                <span className="text-sm font-medium truncate pr-2" style={{ color: "var(--text)" }}>
-                  {displayDomain}
-                </span>
-
-                {/* Score */}
-                <span
-                  className="text-sm font-bold tabular-nums text-right"
-                  style={{ color }}
-                >
-                  {row.score}
-                </span>
-
-                {/* Grade badge */}
-                <span className="flex justify-center">
-                  <span
-                    className="text-[10px] uppercase tracking-[0.12em] py-0.5 font-bold text-center"
-                    style={{
-                      color,
-                      background: `color-mix(in srgb, ${color} 10%, transparent)`,
-                      border: `1px solid color-mix(in srgb, ${color} 30%, transparent)`,
-                      minWidth: "72px",
-                      display: "inline-block",
-                    }}
-                  >
-                    {row.grade}
-                  </span>
-                </span>
-
-                {/* Checks */}
-                <span
-                  className="reports-col-checks text-[11px] tabular-nums text-right"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  {row.passing}/{TOTAL_CHECKS}
-                </span>
-
-                {/* Time */}
-                <span
-                  className="reports-col-time text-[11px] text-right"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  {timeAgo(row.scanned_at)}
-                </span>
+                {r.label}
               </a>
             );
           })}
+        </div>
+      )}
 
-          {/* Footer rule */}
-          <div
-            className="flex justify-between mt-4 pt-4 text-[11px] uppercase tracking-[0.12em]"
-            style={{ color: "var(--text-muted)", borderTop: "1px solid var(--text)" }}
-          >
-            <span>Showing last 24 hours</span>
-            <span>{scans.length} entries</span>
-          </div>
+      {/* Table */}
+      {scans.length > 0 ? (
+        <div className="mt-6">
+          {filtered.length === 0 ? (
+            <p className="text-sm mt-8" style={{ color: "var(--text-muted)" }}>
+              No scans match this filter.{" "}
+              <a href="/reports" style={{ color: "var(--blue)", textDecoration: "none" }}>
+                Clear filter →
+              </a>
+            </p>
+          ) : (
+            <>
+              {/* Column headers */}
+              <div
+                className="reports-grid text-[10px] uppercase tracking-[0.2em] pb-2.5"
+                style={{
+                  color: "var(--text-muted)",
+                  borderBottom: "1px solid var(--border)",
+                }}
+              >
+                <span>Domain</span>
+                <span className="text-right">Score</span>
+                <span className="text-center">Grade</span>
+                <span className="reports-col-checks text-right">Checks</span>
+                <span className="reports-col-time text-right">Time</span>
+              </div>
+
+              {pageScans.map((row, i) => {
+                const color = scoreColor(row.score);
+                const displayDomain = row.domain.replace(/^https?:\/\//, "");
+                const shareUrl = `/score?url=${encodeURIComponent(displayDomain)}&score=${row.score}&grade=${encodeURIComponent(row.grade)}&passing=${row.passing}&total=${TOTAL_CHECKS}`;
+                return (
+                  <a
+                    key={i}
+                    href={shareUrl}
+                    className="scan-row reports-grid items-center py-3 transition-all"
+                    style={{
+                      borderBottom: "1px dotted var(--border)",
+                      textDecoration: "none",
+                      color: "inherit",
+                    }}
+                  >
+                    <span className="text-sm font-medium truncate pr-2" style={{ color: "var(--text)" }}>
+                      {displayDomain}
+                    </span>
+                    <span className="text-sm font-bold tabular-nums text-right" style={{ color }}>
+                      {row.score}
+                    </span>
+                    <span className="flex justify-center">
+                      <span
+                        className="text-[10px] uppercase tracking-[0.12em] py-0.5 font-bold text-center"
+                        style={{
+                          color,
+                          background: `color-mix(in srgb, ${color} 10%, transparent)`,
+                          border: `1px solid color-mix(in srgb, ${color} 30%, transparent)`,
+                          minWidth: "72px",
+                          display: "inline-block",
+                        }}
+                      >
+                        {row.grade}
+                      </span>
+                    </span>
+                    <span
+                      className="reports-col-checks text-[11px] tabular-nums text-right"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {row.passing}/{TOTAL_CHECKS}
+                    </span>
+                    <span
+                      className="reports-col-time text-[11px] text-right"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {timeAgo(row.scanned_at)}
+                    </span>
+                  </a>
+                );
+              })}
+
+              {/* Footer: entry count + pagination */}
+              <div
+                className="flex justify-between items-center mt-4 pt-4 text-[11px] uppercase tracking-[0.12em]"
+                style={{ color: "var(--text-muted)", borderTop: "1px solid var(--text)" }}
+              >
+                <span>
+                  {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+                </span>
+
+                {totalPages > 1 && (
+                  <div className="flex gap-5 items-center">
+                    {page > 1 ? (
+                      <a
+                        href={buildUrl(range, page - 1)}
+                        style={{ color: "var(--blue)", textDecoration: "none" }}
+                      >
+                        ← Prev
+                      </a>
+                    ) : (
+                      <span style={{ opacity: 0.3 }}>← Prev</span>
+                    )}
+                    <span>
+                      {page} / {totalPages}
+                    </span>
+                    {page < totalPages ? (
+                      <a
+                        href={buildUrl(range, page + 1)}
+                        style={{ color: "var(--blue)", textDecoration: "none" }}
+                      >
+                        Next →
+                      </a>
+                    ) : (
+                      <span style={{ opacity: 0.3 }}>Next →</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       ) : (
         <div className="mt-12 text-center">
