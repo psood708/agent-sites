@@ -106,9 +106,8 @@ export default async function ReportsPage() {
         <div className="mt-8">
           {/* Column headers */}
           <div
-            className="grid text-[10px] uppercase tracking-[0.2em] pb-2.5"
+            className="reports-grid text-[10px] uppercase tracking-[0.2em] pb-2.5"
             style={{
-              gridTemplateColumns: "1fr 64px 80px 48px 80px",
               color: "var(--text-muted)",
               borderBottom: "1px solid var(--border)",
             }}
@@ -116,8 +115,8 @@ export default async function ReportsPage() {
             <span>Domain</span>
             <span className="text-right">Score</span>
             <span className="text-center">Grade</span>
-            <span className="text-right">Checks</span>
-            <span className="text-right">Time</span>
+            <span className="reports-col-checks text-right">Checks</span>
+            <span className="reports-col-time text-right">Time</span>
           </div>
 
           {scans.map((row, i) => {
@@ -128,16 +127,15 @@ export default async function ReportsPage() {
               <a
                 key={i}
                 href={shareUrl}
-                className="scan-row grid items-center py-3 transition-all"
+                className="scan-row reports-grid items-center py-3 transition-all"
                 style={{
-                  gridTemplateColumns: "1fr 64px 80px 48px 80px",
                   borderBottom: "1px dotted var(--border)",
                   textDecoration: "none",
                   color: "inherit",
                 }}
               >
                 {/* Domain */}
-                <span className="text-sm font-medium" style={{ color: "var(--text)" }}>
+                <span className="text-sm font-medium truncate pr-2" style={{ color: "var(--text)" }}>
                   {displayDomain}
                 </span>
 
@@ -152,11 +150,13 @@ export default async function ReportsPage() {
                 {/* Grade badge */}
                 <span className="flex justify-center">
                   <span
-                    className="text-[10px] uppercase tracking-[0.12em] px-2 py-0.5 font-bold"
+                    className="text-[10px] uppercase tracking-[0.12em] py-0.5 font-bold text-center"
                     style={{
                       color,
                       background: `color-mix(in srgb, ${color} 10%, transparent)`,
                       border: `1px solid color-mix(in srgb, ${color} 30%, transparent)`,
+                      minWidth: "72px",
+                      display: "inline-block",
                     }}
                   >
                     {row.grade}
@@ -165,7 +165,7 @@ export default async function ReportsPage() {
 
                 {/* Checks */}
                 <span
-                  className="text-[11px] tabular-nums text-right"
+                  className="reports-col-checks text-[11px] tabular-nums text-right"
                   style={{ color: "var(--text-muted)" }}
                 >
                   {row.passing}/{TOTAL_CHECKS}
@@ -173,7 +173,7 @@ export default async function ReportsPage() {
 
                 {/* Time */}
                 <span
-                  className="text-[11px] text-right"
+                  className="reports-col-time text-[11px] text-right"
                   style={{ color: "var(--text-muted)" }}
                 >
                   {timeAgo(row.scanned_at)}

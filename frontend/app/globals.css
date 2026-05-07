@@ -101,3 +101,23 @@ body {
 
 .scan-row:hover { background: var(--bg-card); }
 .back-link:hover { color: var(--text) !important; }
+
+/* Reports table — mobile: domain + score + grade only */
+.reports-grid {
+  display: grid;
+  grid-template-columns: 1fr 48px 80px;
+}
+.reports-col-checks,
+.reports-col-time {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .reports-grid {
+    grid-template-columns: 1fr 64px 96px 48px 80px;
+  }
+  .reports-col-checks,
+  .reports-col-time {
+    display: block;
+  }
+}
