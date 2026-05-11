@@ -121,3 +121,21 @@ body {
     display: block;
   }
 }
+
+/* Dashboard table — mobile: url + score + grade; desktop adds time */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 48px 80px;
+}
+.dashboard-col-time {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 64px 96px 80px;
+  }
+  .dashboard-col-time {
+    display: block;
+  }
+}

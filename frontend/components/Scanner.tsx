@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 import ScoreGauge from "./ScoreGauge";
 import ScoreTable from "./ScoreTable";
 import RecommendationsPanel from "./RecommendationsPanel";
@@ -48,9 +49,13 @@ export default function Scanner({ initialUrl, stats }: { initialUrl?: string; st
     const t0 = Date.now();
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (session?.access_token) headers["Authorization"] = `Bearer ${session.access_token}`;
       const res = await fetch(`${apiUrl}/scan`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ url: target }),
       });
       if (!res.ok) {

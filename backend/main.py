@@ -1,12 +1,14 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
+from typing import Optional
+
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
 
 from scorer import scan
-from db import get_cached_scan, store_scan, check_rate_limit, get_recent_scans, get_stats
+from db import get_cached_scan, store_scan, check_rate_limit, get_recent_scans, get_stats, get_user_from_jwt, get_user_scans
 
 app = FastAPI(title="AgentReadiness API")
 
@@ -30,7 +32,12 @@ def _client_ip(request: Request) -> str:
 
 
 @app.post("/scan")
-async def scan_url(req: ScanRequest, request: Request, bg: BackgroundTasks):
+async def scan_url(
+    req: ScanRequest,
+    request: Request,
+    bg: BackgroundTasks,
+    authorization: Optional[str] = Header(default=None),
+):
     ip = _client_ip(request)
 
     if not check_rate_limit(ip, limit=15):
@@ -47,8 +54,22 @@ async def scan_url(req: ScanRequest, request: Request, bg: BackgroundTasks):
     if "error" in result:
         raise HTTPException(status_code=422, detail=result["error"])
 
-    bg.add_task(store_scan, result, ip)
+    user_id: Optional[str] = None
+    if authorization and authorization.startswith("Bearer "):
+        user_id = get_user_from_jwt(authorization[7:])
+
+    bg.add_task(store_scan, result, ip, user_id)
     return result
+
+
+@app.get("/user/scans")
+def user_scans_endpoint(authorization: Optional[str] = Header(default=None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    user_id = get_user_from_jwt(authorization[7:])
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return get_user_scans(user_id)
 
 
 @app.get("/recent")

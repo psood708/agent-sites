@@ -73,6 +73,25 @@ export default function NavBar({ userEmail }: { userEmail: string | null }) {
                 {label}
               </Link>
             ))}
+            {userEmail && (
+              <Link
+                href="/dashboard"
+                className="transition-colors"
+                style={{
+                  color: pathname === "/dashboard" ? "var(--text)" : "var(--text-muted)",
+                  textDecoration: "none",
+                }}
+                onMouseEnter={(e) =>
+                  ((e.currentTarget as HTMLElement).style.color = "var(--text)")
+                }
+                onMouseLeave={(e) =>
+                  ((e.currentTarget as HTMLElement).style.color =
+                    pathname === "/dashboard" ? "var(--text)" : "var(--text-muted)")
+                }
+              >
+                Dashboard
+              </Link>
+            )}
           </div>
           {userEmail ? (
             <div className="hidden sm:flex items-center gap-3">
@@ -227,6 +246,20 @@ export default function NavBar({ userEmail }: { userEmail: string | null }) {
                   {label}
                 </Link>
               ))}
+              {userEmail && (
+                <Link
+                  href="/dashboard"
+                  onClick={close}
+                  className="px-5 py-3.5 text-[11px] uppercase tracking-[0.2em] transition-colors"
+                  style={{
+                    color: pathname === "/dashboard" ? "var(--text)" : "var(--text-muted)",
+                    textDecoration: "none",
+                    borderLeft: pathname === "/dashboard" ? "2px solid var(--blue)" : "2px solid transparent",
+                  }}
+                >
+                  Dashboard
+                </Link>
+              )}
             </div>
 
             {/* Sign in / Sign out */}

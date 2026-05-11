@@ -57,14 +57,14 @@ def get_cached_scan(url: str) -> Optional[dict]:
     return None
 
 
-def store_scan(result: dict, ip: str = "") -> None:
+def store_scan(result: dict, ip: str = "", user_id: Optional[str] = None) -> None:
     client = _get_client()
     if not client:
         return
     try:
         passing = sum(1 for c in result["checks"].values() if c.get("pass"))
         hostname = urlparse(result["origin"]).hostname or result["origin"]
-        client.table("public_scans").insert({
+        row: dict = {
             "url": result["url"],
             "domain": hostname,
             "score": result["score"],
@@ -74,9 +74,42 @@ def store_scan(result: dict, ip: str = "") -> None:
             "llms_txt_draft": result.get("llms_txt_draft", ""),
             "passing": passing,
             "ip": ip,
-        }).execute()
+        }
+        if user_id:
+            row["user_id"] = user_id
+        client.table("public_scans").insert(row).execute()
     except Exception as e:
         logger.error("Store scan failed: %s", e)
+
+
+def get_user_from_jwt(jwt: str) -> Optional[str]:
+    client = _get_client()
+    if not client:
+        return None
+    try:
+        res = client.auth.get_user(jwt)
+        return str(res.user.id) if res.user else None
+    except Exception:
+        return None
+
+
+def get_user_scans(user_id: str) -> list:
+    client = _get_client()
+    if not client:
+        return []
+    try:
+        res = (
+            client.table("public_scans")
+            .select("url, domain, score, grade, scanned_at")
+            .eq("user_id", user_id)
+            .order("scanned_at", desc=True)
+            .limit(50)
+            .execute()
+        )
+        return res.data or []
+    except Exception as e:
+        logger.error("get_user_scans failed: %s", e)
+        return []
 
 
 def check_rate_limit(ip: str, limit: int = 15) -> bool:
