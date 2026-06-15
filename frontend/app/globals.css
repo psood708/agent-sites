@@ -122,18 +122,22 @@ body {
   }
 }
 
-/* Dashboard table — mobile: url + score + grade; desktop adds time */
+/* Dashboard table — mobile: url + score + grade + watch; desktop adds time */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 48px 80px;
+  grid-template-columns: 1fr 48px 80px 64px;
 }
 .dashboard-col-time {
   display: none;
 }
+.dashboard-col-watch {
+  display: flex;
+  justify-content: flex-end;
+}
 
 @media (min-width: 640px) {
   .dashboard-grid {
-    grid-template-columns: 1fr 64px 96px 80px;
+    grid-template-columns: 1fr 64px 96px 80px 72px;
   }
   .dashboard-col-time {
     display: block;

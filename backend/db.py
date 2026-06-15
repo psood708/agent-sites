@@ -82,15 +82,40 @@ def store_scan(result: dict, ip: str = "", user_id: Optional[str] = None) -> Non
         logger.error("Store scan failed: %s", e)
 
 
-def get_user_from_jwt(jwt: str) -> Optional[str]:
-    client = _get_client()
-    if not client:
+def get_user_info_from_jwt(jwt: str) -> Optional[dict]:
+    """Returns {'id': ..., 'email': ...} or None."""
+    if not SUPABASE_URL or not SUPABASE_KEY:
         return None
     try:
-        res = client.auth.get_user(jwt)
-        return str(res.user.id) if res.user else None
-    except Exception:
+        import httpx
+        res = httpx.get(
+            f"{SUPABASE_URL}/auth/v1/user",
+            headers={"Authorization": f"Bearer {jwt}", "apikey": SUPABASE_KEY},
+            timeout=5.0,
+        )
+        if res.status_code == 200:
+            data = res.json()
+            return {"id": data.get("id"), "email": data.get("email")}
+    except Exception as e:
+        logger.error("get_user_info_from_jwt failed: %s", e)
+    return None
+
+
+def get_user_from_jwt(jwt: str) -> Optional[str]:
+    if not SUPABASE_URL or not SUPABASE_KEY:
         return None
+    try:
+        import httpx
+        res = httpx.get(
+            f"{SUPABASE_URL}/auth/v1/user",
+            headers={"Authorization": f"Bearer {jwt}", "apikey": SUPABASE_KEY},
+            timeout=5.0,
+        )
+        if res.status_code == 200:
+            return res.json().get("id")
+    except Exception as e:
+        logger.error("get_user_from_jwt failed: %s", e)
+    return None
 
 
 def get_user_scans(user_id: str) -> list:
@@ -110,6 +135,79 @@ def get_user_scans(user_id: str) -> list:
     except Exception as e:
         logger.error("get_user_scans failed: %s", e)
         return []
+
+
+def add_watched_url(user_id: str, user_email: str, url: str, current_score: int) -> None:
+    client = _get_client()
+    if not client:
+        return
+    try:
+        client.table("watched_urls").upsert({
+            "user_id": user_id,
+            "user_email": user_email,
+            "url": url,
+            "last_score": current_score,
+            "last_scanned_at": datetime.now(timezone.utc).isoformat(),
+        }, on_conflict="user_id,url").execute()
+    except Exception as e:
+        logger.error("add_watched_url failed: %s", e)
+
+
+def remove_watched_url(user_id: str, url: str) -> None:
+    client = _get_client()
+    if not client:
+        return
+    try:
+        client.table("watched_urls").delete().eq("user_id", user_id).eq("url", url).execute()
+    except Exception as e:
+        logger.error("remove_watched_url failed: %s", e)
+
+
+def get_watched_urls(user_id: str) -> list:
+    client = _get_client()
+    if not client:
+        return []
+    try:
+        res = (
+            client.table("watched_urls")
+            .select("id, url, last_score, last_scanned_at, created_at")
+            .eq("user_id", user_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return res.data or []
+    except Exception as e:
+        logger.error("get_watched_urls failed: %s", e)
+        return []
+
+
+def get_all_watched_for_alerts() -> list:
+    client = _get_client()
+    if not client:
+        return []
+    try:
+        res = (
+            client.table("watched_urls")
+            .select("id, user_email, url, last_score")
+            .execute()
+        )
+        return res.data or []
+    except Exception as e:
+        logger.error("get_all_watched_for_alerts failed: %s", e)
+        return []
+
+
+def update_watched_score(watch_id: str, new_score: int) -> None:
+    client = _get_client()
+    if not client:
+        return
+    try:
+        client.table("watched_urls").update({
+            "last_score": new_score,
+            "last_scanned_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", watch_id).execute()
+    except Exception as e:
+        logger.error("update_watched_score failed: %s", e)
 
 
 def check_rate_limit(ip: str, limit: int = 15) -> bool:
